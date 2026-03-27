@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Trust Analyzer</title>
+    <meta name="description"
+        content="AI-powered fake review detection using Random Forest classification. Analyze reviews for authenticity and explore data reports.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- ─── Navigation ─── -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="nav-icon">🔍</span>
+            <span class="nav-title">Review Trust Analyzer</span>
+        </div>
+        <div class="nav-links">
+            <a href="#hero" class="nav-link active">Predict</a>
+            <a href="#reports" class="nav-link">Reports</a>
+        </div>
+    </nav>
+
+    <!-- ─── Hero / Prediction Section ─── -->
+    <section id="hero" class="hero-section">
+        <div class="hero-content">
+            <div class="hero-badge">AI-Powered Detection</div>
+            <h1>Is this review <span class="gradient-text">real</span> or <span class="gradient-text-alt">fake</span>?
+            </h1>
+            <p class="hero-subtitle">Paste any product review below and our Random Forest model will analyze it for
+                authenticity signals.</p>
+
+            <div class="predict-card">
+                <div class="input-group">
+                    <label for="review-input">Paste your review here</label>
+                    <textarea id="review-input"
+                        placeholder="e.g. This product is absolutely amazing, best thing I ever bought!! The quality is incredible and it arrived super fast. Would definitely recommend to everyone!!!"
+                        rows="5"></textarea>
+                </div>
+                <button id="predict-btn" class="btn-primary" onclick="predictReview()">
+                    <span class="btn-icon">⚡</span>
+                    Analyze Review
+                </button>
+                <div id="loading" class="loading hidden">
+                    <div class="spinner"></div>
+                    <span>Analyzing with Random Forest model...</span>
+                </div>
+            </div>
+
+            <!-- Result Card -->
+            <div id="result-card" class="result-card hidden">
+                <div class="result-header">
+                    <div id="result-icon" class="result-icon"></div>
+                    <div>
+                        <h2 id="result-verdict"></h2>
+                        <p id="result-subtitle" class="result-subtitle"></p>
+                    </div>
+                </div>
+                <div class="result-meters">
+                    <div class="meter-wrapper">
+                        <div class="meter-label">
+                            <span>Fake Probability</span>
+                            <span id="fake-pct" class="meter-value"></span>
+                        </div>
+                        <div class="meter-bar">
+                            <div id="fake-bar" class="meter-fill fake-fill"></div>
+                        </div>
+                    </div>
+                    <div class="meter-wrapper">
+                        <div class="meter-label">
+                            <span>Genuine Probability</span>
+                            <span id="genuine-pct" class="meter-value"></span>
+                        </div>
+                        <div class="meter-bar">
+                            <div id="genuine-bar" class="meter-fill genuine-fill"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="result-stats">
+                    <div class="stat-chip">
+                        <span class="stat-label">Words</span>
+                        <span id="stat-words" class="stat-value">—</span>
+                    </div>
+                    <div class="stat-chip">
+                        <span class="stat-label">Exclamations</span>
+                        <span id="stat-exclaim" class="stat-value">—</span>
+                    </div>
+                    <div class="stat-chip">
+                        <span class="stat-label">Caps Ratio</span>
+                        <span id="stat-caps" class="stat-value">—</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Decorative blobs -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </section>
+
+    <!-- ─── Reports / Dashboard Section ─── -->
+    <section id="reports" class="reports-section">
+        <div class="section-header">
+            <div class="hero-badge">Analysis Dashboard</div>
+            <h2>Comprehensive <span class="gradient-text">Reports</span></h2>
+            <p>22 visualizations spanning EDA, NLP, network analysis, anomaly detection, and classification.</p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="eda">EDA</button>
+            <button class="filter-btn" data-filter="features">Features</button>
+            <button class="filter-btn" data-filter="sentiment">Sentiment</button>
+            <button class="filter-btn" data-filter="topic">Topic Modeling</button>
+            <button class="filter-btn" data-filter="graph">Graph Analysis</button>
+            <button class="filter-btn" data-filter="anomaly">Anomaly Detection</button>
+            <button class="filter-btn" data-filter="classification">Classification</button>
+            <button class="filter-btn" data-filter="wordcloud">Word Clouds</button>
+        </div>
+
+        <!-- Figure Grid -->
+        <div class="figure-grid" id="figure-grid">
+            <!-- EDA Figures -->
+            <div class="figure-card" data-category="eda">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/eda_01_rating_distribution.png" alt="Amazon Star Rating Distribution"
+                        loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Star Rating Distribution</h3>
+                    <p>Distribution of star ratings across 80K sampled Amazon reviews</p>
+                    <span class="figure-tag">EDA</span>
+                </div>
+            </div>
+
+            <div class="figure-card" data-category="eda">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/eda_02_review_length.png" alt="Review Length Distribution" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Review Length Distribution</h3>
+                    <p>Word count histogram for Amazon reviews (clipped at 400)</p>
+                    <span class="figure-tag">EDA</span>
+                </div>
+            </div>
+
+            <div class="figure-card" data-category="eda">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/eda_03_class_balance.png" alt="Class Balance" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Fake vs Genuine Balance</h3>
+                    <p>Class distribution — CG (Fake) vs OR (Genuine) reviews</p>
+                    <span class="figure-tag">EDA</span>
+                </div>
+            </div>
+
+            <div class="figure-card" data-category="eda">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/eda_04_verified_status.png" alt="Verified Purchase Status" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Verified Purchase Status</h3>
+                    <p>Amazon reviews: verified vs unverified purchase breakdown</p>
+                    <span class="figure-tag">EDA</span>
+                </div>
+            </div>
+
+            <div class="figure-card" data-category="eda">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/eda_05_length_by_label.png" alt="Length by Label" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Length: Fake vs Genuine</h3>
+                    <p>Density plot showing fake reviews tend to be shorter</p>
+                    <span class="figure-tag">EDA</span>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="figure-card" data-category="features">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig05_length_distribution.png" alt="Features - Length Distribution"
+                        loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Engineered Length Features</h3>
+                    <p>Distribution of review length after feature engineering</p>
+                    <span class="figure-tag">Features</span>
+                </div>
+            </div>
+
+            <div class="figure-card" data-category="features">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig06_exclaim_count.png" alt="Exclamation Count" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Exclamation Count</h3>
+                    <p>Distribution of exclamation marks as a fake-review signal</p>
+                    <span class="figure-tag">Features</span>
+                </div>
+            </div>
+
+            <!-- Sentiment -->
+            <div class="figure-card" data-category="sentiment">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig07_sentiment_distribution.png" alt="Sentiment Distribution" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Sentiment Distribution</h3>
+                    <p>AFINN-based sentiment scores across all reviews</p>
+                    <span class="figure-tag">Sentiment</span>
+                </div>
+            </div>
+
+            <div class="figure-card" data-category="sentiment">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig08_rating_sentiment_heatmap.png" alt="Rating vs Sentiment Heatmap"
+                        loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Rating × Sentiment Heatmap</h3>
+                    <p>Correlation between star rating and sentiment score</p>
+                    <span class="figure-tag">Sentiment</span>
+                </div>
+            </div>
+
+            <div class="figure-card" data-category="sentiment">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig09_sentiment_by_label.png" alt="Sentiment by Label" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Sentiment: Fake vs Genuine</h3>
+                    <p>How sentiment differs between fake and genuine reviews</p>
+                    <span class="figure-tag">Sentiment</span>
+                </div>
+            </div>
+
+            <!-- Topic Modeling -->
+            <div class="figure-card" data-category="topic">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig10_lda_top_terms.png" alt="LDA Top Terms" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>LDA Topic Top Terms</h3>
+                    <p>Top terms per topic from Latent Dirichlet Allocation</p>
+                    <span class="figure-tag">Topic Modeling</span>
+                </div>
+            </div>
+
+            <div class="figure-card" data-category="topic">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig11_topic_distribution.png" alt="Topic Distribution" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Topic Distribution</h3>
+                    <p>How topics are distributed across reviews</p>
+                    <span class="figure-tag">Topic Modeling</span>
+                </div>
+            </div>
+
+            <!-- Graph Analysis -->
+            <div class="figure-card" data-category="graph">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig12_five_star_ratio.png" alt="Five Star Ratio" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>5-Star Ratio per Reviewer</h3>
+                    <p>Proportion of 5-star reviews — high ratios flag suspicious reviewers</p>
+                    <span class="figure-tag">Graph</span>
+                </div>
+            </div>
+
+            <div class="figure-card" data-category="graph">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig13_review_velocity.png" alt="Review Velocity" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Review Velocity</h3>
+                    <p>Number of reviews per reviewer — bursty patterns signal fraud</p>
+                    <span class="figure-tag">Graph</span>
+                </div>
+            </div>
+
+            <div class="figure-card" data-category="graph">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig14_reviewer_graph.png" alt="Reviewer-Product Graph" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Reviewer-Product Graph</h3>
+                    <p>Network graph of reviewer-product relationships</p>
+                    <span class="figure-tag">Graph</span>
+                </div>
+            </div>
+
+            <!-- Anomaly Detection -->
+            <div class="figure-card" data-category="anomaly">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig15_anomaly_scatter.png" alt="Anomaly Scatter" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Anomaly Scatter Plot</h3>
+                    <p>Isolation Forest anomaly scores plotted in feature space</p>
+                    <span class="figure-tag">Anomaly</span>
+                </div>
+            </div>
+
+            <div class="figure-card" data-category="anomaly">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig16_anomaly_score_dist.png" alt="Anomaly Score Distribution" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Anomaly Score Distribution</h3>
+                    <p>Distribution of anomaly scores from Isolation Forest</p>
+                    <span class="figure-tag">Anomaly</span>
+                </div>
+            </div>
+
+            <!-- Classification -->
+            <div class="figure-card" data-category="classification">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig17_confusion_matrix.png" alt="Confusion Matrix" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Confusion Matrix</h3>
+                    <p>Random Forest model performance on test set</p>
+                    <span class="figure-tag">Classification</span>
+                </div>
+            </div>
+
+            <div class="figure-card" data-category="classification">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig18_feature_importance.png" alt="Feature Importance" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Feature Importance</h3>
+                    <p>Top features ranked by Gini importance in Random Forest</p>
+                    <span class="figure-tag">Classification</span>
+                </div>
+            </div>
+
+            <div class="figure-card" data-category="classification">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig19_model_comparison.png" alt="Model Comparison" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Model Comparison</h3>
+                    <p>Accuracy comparison: Random Forest vs Logistic vs Naive Bayes</p>
+                    <span class="figure-tag">Classification</span>
+                </div>
+            </div>
+
+            <!-- Word Clouds -->
+            <div class="figure-card" data-category="wordcloud">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig20_wordcloud_fake.png" alt="Fake Reviews Word Cloud" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Fake Reviews — Word Cloud</h3>
+                    <p>Most frequent words in computer-generated (fake) reviews</p>
+                    <span class="figure-tag">Word Cloud</span>
+                </div>
+            </div>
+
+            <div class="figure-card" data-category="wordcloud">
+                <div class="figure-img-wrapper">
+                    <img src="../figures/fig21_wordcloud_genuine.png" alt="Genuine Reviews Word Cloud" loading="lazy">
+                </div>
+                <div class="figure-info">
+                    <h3>Genuine Reviews — Word Cloud</h3>
+                    <p>Most frequent words in original (genuine) reviews</p>
+                    <span class="figure-tag">Word Cloud</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Lightbox Modal ─── -->
+    <div id="lightbox" class="lightbox hidden" onclick="closeLightbox()">
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+            <img id="lightbox-img" src="" alt="">
+            <p id="lightbox-caption"></p>
+        </div>
+    </div>
+
+    <!-- ─── Footer ─── -->
+    <footer class="footer">
+        <p>Review Trust Analyzer — CSS-321 Data Warehousing Project &nbsp;|&nbsp; Group 1</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
